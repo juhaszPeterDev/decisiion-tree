@@ -1,0 +1,21 @@
+{
+  "name": "decision-tree",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js",
+    "debug": "set NODE_ENV=debug&& node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juhaszPeterDev/decision-tree.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juhaszPeterDev/decision-tree/issues"
+  },
+  "homepage": "https://github.com/juhaszPeterDev/decision-tree#readme"
+}
