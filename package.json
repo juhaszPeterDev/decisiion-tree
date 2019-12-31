@@ -17,5 +17,9 @@
   "bugs": {
     "url": "https://github.com/juhaszPeterDev/decision-tree/issues"
   },
-  "homepage": "https://github.com/juhaszPeterDev/decision-tree#readme"
+  "homepage": "https://github.com/juhaszPeterDev/decision-tree#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "file-system": "^2.2.2"
+  }
 }

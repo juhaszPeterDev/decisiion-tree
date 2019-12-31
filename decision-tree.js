@@ -1,6 +1,20 @@
+const fs = require('file-system');
+
 const logger = {
+    lines: [],
     log: (args) => {
         process.env.NODE_ENV === 'debug' ? console.log.apply(null,args):1;
+    },
+    startWriting: () => {
+        this.lines = [];
+    },
+    addLine: (str) => {
+        this.lines.push(str);
+    },
+    endWriting: () => {
+        if (fs.writeFile !== undefined) {
+            fs.writeFile('result.txt', this.lines.join('\n'), function(err) {})
+        }
     }
 };
 
@@ -81,9 +95,9 @@ const createSubGroupsOnQuestionGroup = (decisions, questionGroup, questionIndex)
     });
     const newGroups = [];
     Object.keys(questionGroup).forEach(key => {
-        const newGroup = [];
+        const newGroup = {chosenAnswer: key, decisions:[]};
         questionGroup[key].indexes.forEach(index => {
-            newGroup.push(newDecisions[index]);
+            newGroup.decisions.push(newDecisions[index]);
         });
         newGroups.push(newGroup);
     });
@@ -110,10 +124,58 @@ const informationGain = (decisions, possibleOutcomes) => {
     const maxIndex = gainsOnQuestions.indexOf(gainsOnQuestions.reduce((maxValue,actVal) => actVal > maxValue ? actVal : maxValue,-1));
     const newSubGroups = createSubGroupsOnQuestionGroup(decisions, groups[maxIndex], maxIndex);
     logger.log(['Max index: ',maxIndex]);
-    const newEntropies = newSubGroups.map(getDecisionsEntropy);
+    const newEntropies = newSubGroups.map(item => getDecisionsEntropy(item.decisions));
     logger.log(['Max gain: ',gainsOnQuestions[maxIndex]]);
     logger.log(['Result: ',newEntropies]);
     return {maxIndex, newSubGroups, entropyGain: baseEntropy-gainsOnQuestions[maxIndex], newEntropies, maxGain: gainsOnQuestions[maxIndex]};
 };
 
-module.exports = {informationGain};
+const buildDecisionTree = (decisions, possibleOutcomes, questionList, depth) => {
+    const root = {}
+    const result = informationGain(decisions, possibleOutcomes);
+    root.entropy = result.entropyGain+result.maxGain;
+    root.entropyGain = result.entropyGain;
+    root.question = questionList[result.maxIndex];
+    root.children = result.newSubGroups.map((item, index) => {
+        const child = {chosenAnswer:item.chosenAnswer,entropy: result.newEntropies[index]};
+        if (depth > 0 && child.entropy){
+            const newList = JSON.parse(JSON.stringify(questionList));
+            newList.splice(result.maxIndex,1)
+            child.nextQuestion = buildDecisionTree(item.decisions, possibleOutcomes, newList,depth-1);
+        } else {
+            child.distribution = item.decisions.reduce((distribution, decision) => {
+                if (distribution[decision.choice] === undefined){
+                    distribution[decision.choice] = 0;
+                }
+                distribution[decision.choice]++;
+                return distribution;
+            },{});
+        }
+        return child;
+    });
+    return root;
+};
+
+const printDecisionTree = (decisionTree, depth) => {
+    depth = depth ? depth : 0;
+    if (depth === 0){
+        logger.startWriting();
+    }
+    let spacing = "";
+    for (let i = 0; i < depth; i++){
+        spacing = spacing + "    ";
+    }
+    logger.addLine(spacing+" "+decisionTree.question);
+    decisionTree.children.map(child => {
+        const distributionText = child.distribution ? JSON.stringify(child.distribution) : "";
+        logger.addLine(spacing+"  - "+child.chosenAnswer+" "+distributionText)
+        if (child.nextQuestion){
+            printDecisionTree(child.nextQuestion, depth+1)
+        }
+    });
+    if (depth === 0){
+        logger.endWriting();
+    }
+};
+
+module.exports = {informationGain,buildDecisionTree, printDecisionTree};

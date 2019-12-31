@@ -1,9 +1,10 @@
-const {informationGain} = require('./decision-tree');
+const {informationGain, buildDecisionTree, printDecisionTree} = require('./decision-tree');
 const liveData = require('./liveData');
 
 const main = () => {
     if (liveData.data !== undefined){
-        informationGain(liveData.data, liveData.possibleChoices);
+        const decisionTree = buildDecisionTree(liveData.data, liveData.possibleChoices,liveData.questionList,2);
+        printDecisionTree(decisionTree);
     } else {
         const dummyDecisions = [{
             answers: ['asd',1,true],
