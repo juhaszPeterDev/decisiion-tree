@@ -142,15 +142,14 @@ const buildDecisionTree = (decisions, possibleOutcomes, questionList, depth) => 
             const newList = JSON.parse(JSON.stringify(questionList));
             newList.splice(result.maxIndex,1)
             child.nextQuestion = buildDecisionTree(item.decisions, possibleOutcomes, newList,depth-1);
-        } else {
-            child.distribution = item.decisions.reduce((distribution, decision) => {
-                if (distribution[decision.choice] === undefined){
-                    distribution[decision.choice] = 0;
-                }
-                distribution[decision.choice]++;
-                return distribution;
-            },{});
         }
+        child.distribution = item.decisions.reduce((distribution, decision) => {
+            if (distribution[decision.choice] === undefined){
+                distribution[decision.choice] = 0;
+            }
+            distribution[decision.choice]++;
+            return distribution;
+        },{});
         return child;
     });
     return root;
